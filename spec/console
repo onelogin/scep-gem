@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+require 'bundler'
+Bundler.require :default
+require 'scep'
+require 'pry'
+
+pry
