@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe SCEP::Keypair do
   let(:certificate) { OpenSSL::X509::Certificate.new read_fixture('self-signed.crt') }
-  let(:private_key) { OpenSSL::PKey.read read_fixture('self-signed.key') }
+  let(:private_key) { OpenSSL::PKey::RSA.new read_fixture('self-signed.key') }
 
   describe '#initialize' do
     it 'creates a keypair with valid parameters' do
