@@ -27,7 +27,7 @@ module SCEP
   #
   # @see https://groups.google.com/forum/#!topic/mailing.openssl.users/AIZndhJuG7I
   # @see https://gist.github.com/cgthornt/fe1f9d68e18cc4d1ba20
-  class Pkcs7CertOnly
+  class PKCS7CertOnly
     include OpenSSL::ASN1
 
     # @return [Array<OpenSSL::X509::Certificate>]

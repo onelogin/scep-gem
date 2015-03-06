@@ -106,7 +106,7 @@ module SCEP
       logger.debug 'SCEP server has both RA and CA certificate'
 
       begin
-        pcerts = Pkcs7CertOnly.decode(response_body)
+        pcerts = PKCS7CertOnly.decode(response_body)
       rescue StandardError
         fail ProtocolError, 'SCEP server did not return a parseable PKCS#7'
       end

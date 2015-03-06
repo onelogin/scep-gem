@@ -9,11 +9,11 @@ module SCEP
   autoload :PKCS7CertOnly,  'scep/pkcs7_cert_only'
   autoload :Keypair,        'scep/keypair'
 
-  class << self
+  # Allows backwards-compatibility between ruby 1.8.7 and newer versions
+  # @return [OpenSSL::PKCS7]
+  PKCS7 = defined?(OpenSSL::PKCS7::PKCS7) ? OpenSSL::PKCS7::PKCS7 : OpenSSL::PKCS7
 
-    # Allows backwards-compatibility between ruby 1.8.7 and newer versions
-    # @return [OpenSSL::PKCS7]
-    PKCS7 = defined?(OpenSSL::PKCS7::PKCS7) ? OpenSSL::PKCS7::PKCS7 : OpenSSL::PKCS7
+  class << self
 
     # Allows you to set the SCEP logger
     # @example
