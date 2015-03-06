@@ -11,6 +11,10 @@ module SCEP
 
   class << self
 
+    # Allows backwards-compatibility between ruby 1.8.7 and newer versions
+    # @return [OpenSSL::PKCS7]
+    PKCS7 = defined?(OpenSSL::PKCS7::PKCS7) ? OpenSSL::PKCS7::PKCS7 : OpenSSL::PKCS7
+
     # Allows you to set the SCEP logger
     # @example
     #   SCEP.logger = Rails.logger
