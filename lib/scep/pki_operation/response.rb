@@ -53,8 +53,8 @@ module SCEP
       # @return [Array<OpenSSL::X509::Certificates>] the certificates that were contained
       #   in `raw_string`.
       def decrypt(raw_string)
-        p7raw = unsign_and_unencrypt_raw(raw_string)
-        p7certs = OpenSSL::PKCS7.new(p7raw)
+        p7raw = unsign_and_unencrypt_raw(raw_string, verify = true)
+        p7certs = OpenSSL::PKCS7.new(p7raw, verify)
         @signed_certificates = p7certs.certificates
       end
 

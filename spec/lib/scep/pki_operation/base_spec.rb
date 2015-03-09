@@ -15,7 +15,7 @@ describe SCEP::PKIOperation::Base do
 
   describe '#unsign_and_unencrypt_raw' do
 
-    let(:p7enc)  { OpenSSL::PKCS7.encrypt([ra_keypair.certificate], payload, SCEP::PKIOperation::Base::DEFAULT_CIPHER, OpenSSL::PKCS7::BINARY) }
+    let(:p7enc)  { OpenSSL::PKCS7.encrypt([ra_keypair.certificate], payload, SCEP::PKIOperation::Base.create_default_cipher, OpenSSL::PKCS7::BINARY) }
     let(:p7sign) { OpenSSL::PKCS7.sign(signed_keypair.certificate, signed_keypair.private_key, p7enc.to_der, [signed_keypair.certificate], OpenSSL::PKCS7::BINARY) }
 
     context 'without verification' do

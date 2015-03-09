@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ['lib']
 
   if RUBY_VERSION < '1.9'
-    spec.add_dependency 'httparty', '< 1.9'
+    spec.add_dependency 'httparty', '<= 0.12'
   else
     spec.add_dependency 'httparty'
   end
