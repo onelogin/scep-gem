@@ -44,7 +44,7 @@ module SCEP
     def self.read_private_key(encoded_key, passphrase = nil)
       # Ruby 1.9.3+
       if OpenSSL::PKey.respond_to?(:read)
-        OpenSSL::Pkey.read encoded_key, passphrase
+        OpenSSL::PKey.read encoded_key, passphrase
 
       # Ruby 1.8.7 - keep on guessing which cryptosystem until we're correct
       else

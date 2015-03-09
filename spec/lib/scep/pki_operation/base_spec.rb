@@ -20,7 +20,7 @@ describe SCEP::PKIOperation::Base do
 
     context 'without verification' do
       it 'decrypts the paylaod without issue' do
-        decrypted = base.send(:unsign_and_unencrypt_raw, p7sign.to_der)
+        decrypted = base.send(:unsign_and_unencrypt_raw, p7sign.to_der, false)
         expect(decrypted).to eql(payload)
       end
     end

@@ -7,7 +7,7 @@ module SCEP
     # * {#ra_private_key RA Private Key}
     #
     class Base
-      DEFAULT_CIPHER = OpenSSL::Cipher::Cipher.new('des-ede3-cbc')
+      DEFAULT_CIPHER = OpenSSL::Cipher::Cipher.new('aes-256-cbc')
 
       # Our keypair
       # @return [Keypair]
