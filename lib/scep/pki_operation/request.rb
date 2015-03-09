@@ -35,7 +35,7 @@ module SCEP
 
       # The certificate request
       # @return [OpenSSL::X509::Request]
-      attr_reader :csr
+      attr_accessor :csr
 
       # Decrypts a signed and encrypted csr. Sets {#csr} to the decrypted value
       # @param [String] signed_and_encrypted_csr the raw and encrypted
@@ -52,7 +52,8 @@ module SCEP
       # @param [OpenSSL::X509::Certificate] target_encryption_certs the certificat(s) we should encrypt this for
       # @return [OpenSSL::PKCS7]
       def encrypt(target_encryption_certs)
-        raise ArgumentError, 'Must attach a #csr' if csr.blank?
+        raise ArgumentError, '#csr must be an OpenSSL::X509::Request' unless
+          csr.is_a?(OpenSSL::X509::Request)
         sign_and_encrypt_raw(csr.to_der, target_encryption_certs)
       end
 

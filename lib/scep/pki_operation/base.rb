@@ -7,7 +7,7 @@ module SCEP
     # * {#ra_private_key RA Private Key}
     #
     class Base
-      DEFAULT_CIPHER = OpenSSL::Cipher::Cipher.new('aes-256-cbc')
+      DEFAULT_CIPHER_ALGORITHM = 'aes-256-cbc'
 
       # Our keypair
       # @return [Keypair]
@@ -37,6 +37,13 @@ module SCEP
       def x509_store
         @x509_store ||= OpenSSL::X509::Store.new
       end
+
+      # Adds a certificate to verify against
+      # @param [OpenSSL::X509::Certificate] cert
+      def add_verification_certificate(cert)
+        x509_store.add_cert(cert)
+      end
+      alias_method :verify_against, :add_verification_certificate
 
       protected
 
@@ -70,10 +77,10 @@ module SCEP
       # Signs and encrypts the given raw data
       # @param [String] raw_data the raw data to sign and encrypt
       # @param [OpenSSL::X509::Certificate] target_encryption_certs the cert(s) to encrypt for
-      # @param [OpenSSL::Cipher::Cipher] cipher the cipher to use. Defaults to {DEFAULT_CIPHER}
+      # @param [OpenSSL::Cipher::Cipher] cipher the cipher to use. Defaults to {.create_default_cipher}
       # @return [OpenSSL::PKCS7] the signed and encrypted payload
       def sign_and_encrypt_raw(raw_data, target_encryption_certs, cipher = nil)
-        cipher ||= DEFAULT_CIPHER
+        cipher ||= self.class.create_default_cipher
 
         encrypted = OpenSSL::PKCS7.encrypt(
           wrap_array(target_encryption_certs),
@@ -89,6 +96,12 @@ module SCEP
           OpenSSL::PKCS7::BINARY)
       end
 
+      # Creates an {OpenSSL::Cipher} using the {DEFAULT_CIPHER_ALGORITHM}. It's best to create a new Cipher object
+      # for every new encryption call so that we don't re-use sensitive data (IV's) [citation needed].
+      # @return [OpenSSL::Cipher]
+      def self.create_default_cipher
+        OpenSSL::Cipher.new(DEFAULT_CIPHER_ALGORITHM)
+      end
 
       protected
 
