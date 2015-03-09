@@ -6,6 +6,7 @@ module SCEP
     #   def pkioperation
     #     server = SCEP::Server.new
     #     proxy = SCEP::Proxy.new(server, @ra_cert, @ra_pk)
+    #     proxy.add_verification_certificate @some_cert  # For decrypting the request - this way not "anyone" can decrypt
     #     response = proxy.forward_pki_request(request.raw_post)
     #     send_data response.p7enc_response.to_der
     #   end
@@ -14,11 +15,32 @@ module SCEP
 
       attr_accessor :ra_keypair
 
+      # Whether we should verify certificates when decrypting
+      # @return [Boolean]
+      attr_accessor :verify
+
+      # X509 certificates to verify against
+      # @return [Array<OpenSSL::X509::Certificate>] a list of certs
+      attr_accessor :verification_certificates
+
       # @param [SCEP::Server] server
       # @param [Keypair] ra_keypair
       def initialize(server, ra_keypair)
-        @server = server
+        @server     = server
         @ra_keypair = ra_keypair
+        @verify     = true
+        @verification_certificates = []
+      end
+
+      # Add certificates to verify when decrypting a request
+      # @param [OpenSSL::X509::Certificate]
+      def add_verification_certificate(cert)
+        @verification_certificates << cert
+      end
+
+      # Don't verify certificates (possibly dangerous)
+      def no_verify!
+        @verify = false
       end
 
       # Proxies the raw post request to another SCEP server. Extracts CSR andpublic keys along the way
@@ -27,7 +49,10 @@ module SCEP
       def forward_pki_request(raw_post)
         # Decrypt the request and re-encrypt for the target SCEP server
         request = SCEP::PKIOperation::Request.new(ra_keypair)
-        reencrypted = request.proxy(raw_post, server.ra_certificate).to_der
+        verification_certificates.each do |cert|
+          request.x509_store.add_certificate(cert)
+        end
+        reencrypted = request.proxy(raw_post, server.ra_certificate, verify).to_der
 
         # Forward to SCEP server
         http_response = server.scep_request('PKIOperation', reencrypted, true)

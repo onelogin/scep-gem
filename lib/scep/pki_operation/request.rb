@@ -14,6 +14,7 @@ module SCEP
     #
     #   # Make request & decrypt
     #   request = SCEP::PKIOperation::Request.new(ra_cert, ra_key)
+    #   request.x509_store.add_certificate some_cert  # Add cert to verify
     #   csr = decrypt(encrypted_scep_request)  # OpenSSL::X509::Request
     #
     # @example Encrypt SCEP Request
@@ -38,9 +39,12 @@ module SCEP
 
       # Decrypts a signed and encrypted csr. Sets {#csr} to the decrypted value
       # @param [String] signed_and_encrypted_csr the raw and encrypted
+      # @param [Boolean] verify if TRUE, verifies against {#x509_store}. If FALSE, skips verification
+      # @raise [SCEP::PKIOperation::VerificationFailed] if `verify` is TRUE and the signed payload
+      #   was *not* verified against the {#x509_store}.
       # @return [OpenSSL::X509::Request] the raw CSR
-      def decrypt(signed_and_encrypted_csr)
-        raw_csr = unsign_and_unencrypt_raw(signed_and_encrypted_csr)
+      def decrypt(signed_and_encrypted_csr, verify = true)
+        raw_csr = unsign_and_unencrypt_raw(signed_and_encrypted_csr, verify)
         @csr = OpenSSL::X509::Request.new(raw_csr)
       end
 
@@ -56,8 +60,8 @@ module SCEP
       # @param [String] signed_and_encrypted_csr
       # @param [OpenSSL::X509::Certificate] target_encryption_certs
       # @return [OpenSSL::PKCS7]
-      def proxy(signed_and_encrypted_csr, target_encryption_certs)
-        decrypt(signed_and_encrypted_csr)
+      def proxy(signed_and_encrypted_csr, target_encryption_certs, verify = true)
+        decrypt(signed_and_encrypted_csr, verify)
         encrypt(target_encryption_certs)
       end
     end

@@ -35,23 +35,32 @@ module SCEP
       # {#unsign_and_unencrypt_raw decryption}.
       # @return [OpenSSL::X509::Store]
       def x509_store
-        @x509_store ||= OpenSSL::X509::Store.new.tap do |store|
-          store.set_default_paths
-        end
+        @x509_store ||= OpenSSL::X509::Store.new
       end
 
       protected
 
       # Takes a raw binary string and returns the raw, unencrypted data
       # @param [String] signed_and_encrypted_csr the signed and encrypted data
+      # @param [Boolean] verify if TRUE, verifies the signed PKCS7 payload against the {#x509_store}
+      # @raise [SCEP::PKIOperation::VerificationFailed] if `verify` is TRUE and the signed payload
+      #   was *not* verified against the {#x509_store}.
       # @return [String] the decrypted and unsigned data (original format)
-      # @todo Figure out how to verify
-      def unsign_and_unencrypt_raw(signed_and_encrypted_csr)
+      def unsign_and_unencrypt_raw(signed_and_encrypted_csr, verify = true)
         # Remove signature
         @p7sign = OpenSSL::PKCS7.new(signed_and_encrypted_csr)
 
-        # TODO: actually verify
-        @p7sign.verify([], x509_store, nil, OpenSSL::PKCS7::NOVERIFY | OpenSSL::PKCS7::BINARY)
+        flags = OpenSSL::PKCS7::BINARY
+        flags |= OpenSSL::PKCS7::NOVERIFY unless verify
+
+        # See http://openssl.6102.n7.nabble.com/pkcs7-verification-with-ruby-td28455.html
+        verified = @p7sign.verify([], x509_store, nil, flags)
+
+        if !verified
+          raise SCEP::PKIOperation::VerificationFailed,
+            'Unable to verify signature against certificate store - did you add the correct certificates?'
+        end
+
 
         # Decrypt
         @p7enc   = OpenSSL::PKCS7.new(@p7sign.data)
@@ -63,11 +72,11 @@ module SCEP
       # @param [OpenSSL::X509::Certificate] target_encryption_certs the cert(s) to encrypt for
       # @param [OpenSSL::Cipher::Cipher] cipher the cipher to use. Defaults to {DEFAULT_CIPHER}
       # @return [OpenSSL::PKCS7] the signed and encrypted payload
-      def sign_and_encrypt_raw(raw_data, target_encryption_certs, cipher: nil)
+      def sign_and_encrypt_raw(raw_data, target_encryption_certs, cipher = nil)
         cipher ||= DEFAULT_CIPHER
 
         encrypted = OpenSSL::PKCS7.encrypt(
-          Array.wrap(target_encryption_certs),
+          wrap_array(target_encryption_certs),
           raw_data,
           cipher,
           OpenSSL::PKCS7::BINARY)
@@ -80,6 +89,20 @@ module SCEP
           OpenSSL::PKCS7::BINARY)
       end
 
+
+      protected
+
+      # Same as `Array.wrap`
+      # @see http://apidock.com/rails/Array/wrap/class
+      def wrap_array(object)
+        if object.nil?
+          []
+        elsif object.respond_to?(:to_ary)
+          object.to_ary || [object]
+        else
+          [object]
+        end
+      end
     end
   end
 end

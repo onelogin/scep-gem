@@ -47,8 +47,7 @@ module SCEP
     #   support RA certs.
     def ra_certificate
       # Force download of CA, possibly RA certificate
-      ca = ca_certificate
-      @ra_certificate || ca
+      @ra_certificate || ca_certificate
     end
 
     # Checks to see if the SCEP server supports the RA certificate
@@ -115,8 +114,14 @@ module SCEP
            'SCEP server did not return two certificates in PKCS#7 cert chain' unless
         pcerts.certificates.length == 2
 
-      @ca_certificate = pcerts.certificates.first
-      @ra_certificate = pcerts.certificates.second
+
+      unless pcerts[1].verify(pcerts[0].public_key)
+        fail ProtocolError,
+          'RA certificate must be signed by CA certificate when using RA/CA cert combination'
+      end
+
+      @ca_certificate = pcerts.certificates[0]
+      @ra_certificate = pcerts.certificates[1]
     end
   end
 end
