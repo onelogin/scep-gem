@@ -36,10 +36,11 @@ module SCEP
     #
     class Response < Base
 
+
       # Adds a single, or many certificates to encrypt and sign further
       # @param [Array<OpenSSL::X509::Certificate>] certs
       def signed_certificates=(certs)
-        @signed_certificates = Array.wrap(certs)
+        @signed_certificates = wrap_array(certs)
       end
 
       # Gets any signed certificates that will be encrypted and signed in a SCEP format
@@ -52,8 +53,8 @@ module SCEP
       # @param [String] raw_string the raw response
       # @return [Array<OpenSSL::X509::Certificates>] the certificates that were contained
       #   in `raw_string`.
-      def decrypt(raw_string)
-        p7raw = unsign_and_unencrypt_raw(raw_string)
+      def decrypt(raw_string, verify = true)
+        p7raw = unsign_and_unencrypt_raw(raw_string, verify)
         p7certs = OpenSSL::PKCS7.new(p7raw)
         @signed_certificates = p7certs.certificates
       end
@@ -65,9 +66,9 @@ module SCEP
       #   payload.
       # @return [String] the signed and encrypted payload in binary (DER) format
       def encrypt(target_encryption_certs)
-        raise ArgumentError, 'Must contain at least one of #signed_certificates' if
-          signed_certificates.blank?
-        p7certs = Pkcs7CertOnly.new(signed_certificates)
+        raise ArgumentError, 'Must contain at least one of #signed_certificates' unless
+          signed_certificates.any?
+        p7certs = PKCS7CertOnly.new(signed_certificates)
         sign_and_encrypt_raw(p7certs.to_der, target_encryption_certs)
       end
 
@@ -76,8 +77,8 @@ module SCEP
       # @param [String] signed_and_encrypted_certs
       # @param [OpenSSL::X509::Certificate] target_encryption_certs
       # @return [OpenSSL::PKCS7]
-      def proxy(signed_and_encrypted_certs, target_encryption_certs)
-        decrypt(signed_and_encrypted_certs)
+      def proxy(signed_and_encrypted_certs, target_encryption_certs, verify = true)
+        decrypt(signed_and_encrypted_certs, verify)
         encrypt(target_encryption_certs)
       end
     end

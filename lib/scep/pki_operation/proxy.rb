@@ -4,8 +4,9 @@ module SCEP
     # Enables proxying a PKI SCEP request from the DSL to another SCEP server
     # @example
     #   def pkioperation
-    #     server = SCEP::Server.new
+    #     server = SCEP::Endpoint.new
     #     proxy = SCEP::Proxy.new(server, @ra_cert, @ra_pk)
+    #     proxy.add_verification_certificate @some_cert  # For decrypting the request - this way not "anyone" can decrypt
     #     response = proxy.forward_pki_request(request.raw_post)
     #     send_data response.p7enc_response.to_der
     #   end
@@ -14,11 +15,51 @@ module SCEP
 
       attr_accessor :ra_keypair
 
-      # @param [SCEP::Server] server
+      # Whether we should verify certificates when decrypting
+      # @return [Boolean]
+      attr_accessor :verify_request
+
+      attr_accessor :verify_response
+
+      # X509 certificates to verify against the request
+      # @return [Array<OpenSSL::X509::Certificate>] a list of certs
+      attr_accessor :request_verification_certificates
+
+      attr_accessor :response_verification_certificates
+
+      # @param [SCEP::Endpoint] server
       # @param [Keypair] ra_keypair
       def initialize(server, ra_keypair)
-        @server = server
+        @server     = server
         @ra_keypair = ra_keypair
+        @verify_request = true
+        @verify_response = true
+        @request_verification_certificates = []
+        @response_verification_certificates = []
+      end
+
+      # Add certificates to verify when decrypting a request
+      # @param [OpenSSL::X509::Certificate]
+      def add_response_verification_certificate(cert)
+        @response_verification_certificates << cert
+      end
+
+      def add_request_verification_certificate(cert)
+        @request_verification_certificates << cert
+      end
+
+      # Don't verify certificates (possibly dangerous)
+      def no_verify!
+        no_verify_response!
+        no_verify_request!
+      end
+
+      def no_verify_response!
+        @verify_response = false
+      end
+
+      def no_verify_request!
+        @verify_request = false
       end
 
       # Proxies the raw post request to another SCEP server. Extracts CSR andpublic keys along the way
@@ -27,14 +68,20 @@ module SCEP
       def forward_pki_request(raw_post)
         # Decrypt the request and re-encrypt for the target SCEP server
         request = SCEP::PKIOperation::Request.new(ra_keypair)
-        reencrypted = request.proxy(raw_post, server.ra_certificate).to_der
+        request_verification_certificates.each do |cert|
+          request.verify_against(cert)
+        end
+        reencrypted = request.proxy(raw_post, server.ra_certificate, verify_request).to_der
 
         # Forward to SCEP server
-        http_response = server.scep_request('PKIOperation', reencrypted, true)
+        http_response_body = server.pki_operation(reencrypted, true)
 
         # Decrypt response and re-encrypt for the device
         response = SCEP::PKIOperation::Response.new(ra_keypair)
-        response_reencrypted = response.proxy(http_response.body, request.p7sign.certificates)
+        response_verification_certificates.each do |cert|
+          response.verify_against(cert)
+        end
+        response_reencrypted = response.proxy(http_response_body, request.p7sign.certificates, verify_response)
 
         # Package relevant information
         return Result.new(request.csr, response.signed_certificates, response_reencrypted)

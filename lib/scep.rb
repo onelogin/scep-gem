@@ -4,10 +4,14 @@ require 'openssl'
 require 'scep/version'
 
 module SCEP
-  autoload :Server,         'scep/server'
+  autoload :Endpoint,       'scep/endpoint'
   autoload :PKIOperation,   'scep/pki_operation'
   autoload :PKCS7CertOnly,  'scep/pkcs7_cert_only'
   autoload :Keypair,        'scep/keypair'
+
+  # Allows backwards-compatibility between ruby 1.8.7 and newer versions
+  # @return [OpenSSL::PKCS7]
+  PKCS7 = defined?(OpenSSL::PKCS7::PKCS7) ? OpenSSL::PKCS7::PKCS7 : OpenSSL::PKCS7
 
   class << self
 
