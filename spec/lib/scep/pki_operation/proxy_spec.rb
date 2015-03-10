@@ -28,8 +28,7 @@ describe SCEP::PKIOperation::Proxy do
     let(:stubbed_response_der) { stubbed_response.encrypt(our_ra_keypair.cert) }
 
     before do
-      allow(endpoint).to receive(:pki_operation)
-        .and_return(stubbed_response_der)
+      allow(endpoint).to receive(:pki_operation).and_return(stubbed_response_der)
 
       allow(endpoint).to receive(:ca_certificate).and_return(their_ca_keypair.cert)
     end

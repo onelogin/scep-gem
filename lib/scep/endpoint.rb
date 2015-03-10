@@ -28,7 +28,7 @@ module SCEP
     attr_accessor :default_options
 
     def initialize(base_uri, default_options = {})
-      @default_options = default_options.merge base_uri: base_uri
+      @default_options = default_options.merge(:base_uri => base_uri)
     end
 
     # Gets the CA certificate. Will automatically download the CA certificate from
@@ -103,14 +103,14 @@ module SCEP
     # @param [String] message an optional message to send
     # @return [HTTParty::Response] the httparty response
     def scep_request(operation, message = nil, is_post = false)
-      query = { operation: operation }
+      query = { :operation => operation }
       query[:message] = message unless message.nil?
       if is_post
         logger.debug "Executing POST ?operation=#{operation}"
-        response = self.class.post '/', { query: {operation: operation}, body: message }.merge(default_options)
+        response = self.class.post '/', { :query => { :operation => operation}, :body => message }.merge(default_options)
       else
         logger.debug "Executing GET ?operation=#{operation}&message=#{message}"
-        response = self.class.get '/', { query: query }.merge(default_options)
+        response = self.class.get '/', { :query => query }.merge(default_options)
       end
 
       if response.code != 200
