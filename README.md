@@ -42,13 +42,13 @@ When we are an RA.
 First, collect some certificates:
 
 ```ruby
-their_cert     = OpenSSL::X509::Certificate.new File.read(their.crt')
+their_cert     = OpenSSL::X509::Certificate.new File.read('their.crt')
 our_ra_keypair = SCEP::Keypair.read 'our-ra.crt', 'our-ra.key'
 ```
 
 Now we can make a request object and get the original CSR:
 
-```
+```ruby
 request = SCEP::PKIOperation::Request.new(our_ra_keypair)
 request.verify_against(their_cert) # Make sure the response was signed by someone we trust
 
@@ -68,8 +68,8 @@ and grab the CSR in the process
 
 
 ```ruby
-their_cert     = OpenSSL::X509::Certificate.new File.read(their.crt')
-their_ra_cert  = OpenSSL::X509::Certificate.new File.read(their-ra.crt')
+their_cert     = OpenSSL::X509::Certificate.new File.read('their.crt')
+their_ra_cert  = OpenSSL::X509::Certificate.new File.read('their-ra.crt')
 our_ra_keypair = SCEP::Keypair.read 'our-ra.crt', 'our-ra.key'
 
 request = SCEP::PKIOperation::Request.new(our_ra_keypair)
@@ -85,7 +85,7 @@ Contains the signed X509 Certificate
 When we are an RA
 
 ```ruby
-their_cert     = OpenSSL::X509::Certificate.new File.read(their.crt')
+their_cert     = OpenSSL::X509::Certificate.new File.read('their.crt')
 our_ra_keypair = SCEP::Keypair.read 'our-ra.crt', 'our-ra.key'
 
 signed_cert    = OpenSSL::X509::Certificate.new File.read('cert-signed-by-ca.crt')
