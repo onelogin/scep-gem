@@ -4,7 +4,7 @@ module SCEP
     # Enables proxying a PKI SCEP request from the DSL to another SCEP server
     # @example
     #   def pkioperation
-    #     server = SCEP::Server.new
+    #     server = SCEP::Endpoint.new
     #     proxy = SCEP::Proxy.new(server, @ra_cert, @ra_pk)
     #     proxy.add_verification_certificate @some_cert  # For decrypting the request - this way not "anyone" can decrypt
     #     response = proxy.forward_pki_request(request.raw_post)
@@ -23,7 +23,7 @@ module SCEP
       # @return [Array<OpenSSL::X509::Certificate>] a list of certs
       attr_accessor :verification_certificates
 
-      # @param [SCEP::Server] server
+      # @param [SCEP::Endpoint] server
       # @param [Keypair] ra_keypair
       def initialize(server, ra_keypair)
         @server     = server
@@ -37,6 +37,7 @@ module SCEP
       def add_verification_certificate(cert)
         @verification_certificates << cert
       end
+      alias_method :verify_against, :add_verification_certificate
 
       # Don't verify certificates (possibly dangerous)
       def no_verify!

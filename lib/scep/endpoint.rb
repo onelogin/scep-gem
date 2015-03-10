@@ -1,18 +1,18 @@
 require 'httparty'
-require 'httpfiesta'
+require 'set'
 
 module SCEP
   # Handles making requests to a SCEP server and storing the RA and CA certs. Currently uses
   # the URL defined in the `config/endpoints.yml` file.
   #
   # @example
-  #   scep_endpoint = SCEP::Server.new('https://scep-server-url.com')
+  #   scep_endpoint = SCEP::Endpoint.new('https://scep-server-url.com')
   #   # Downloads RA, CA certs
   #   puts scep_endpoint.ca_certificate # => OpenSSL::X509::Certificate
   #   puts scep_endpoint.ra_certificate
   #
   # @todo GetCACaps
-  class Server
+  class Endpoint
     include HTTParty
     include SCEP::Loggable
 
@@ -74,6 +74,17 @@ module SCEP
     end
     alias_method :get_ca_cert, :download_certificates
 
+
+    # Gets server capabilities
+    # @return [Set<String>] a set of capabilities
+    def capabilities
+      @capabilities ||= begin
+        response = scep_request 'GetCACaps'
+        caps = response.body.trim.split("\n")
+        Set.new(caps)
+      end
+    end
+
     # Executes a SCEP request.
     # @param [String] operation the SCEP operation to perform
     # @param [String] message an optional message to send
@@ -88,7 +99,11 @@ module SCEP
         logger.debug "Executing GET ?operation=#{operation}&message=#{message}"
         response = self.class.get '/', { query: query }.merge(default_options)
       end
-      response.assert.status(200)
+
+      if response.code != 200
+        raise ProtocolError, "SCEP request returned non-200 code of #{response.code}"
+      end
+
       return response
     end
 
@@ -115,7 +130,7 @@ module SCEP
         pcerts.certificates.length == 2
 
 
-      unless pcerts[1].verify(pcerts[0].public_key)
+      unless pcerts.certificates[1].verify(pcerts.certificates[0].public_key)
         fail ProtocolError,
           'RA certificate must be signed by CA certificate when using RA/CA cert combination'
       end

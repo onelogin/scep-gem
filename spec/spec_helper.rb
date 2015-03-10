@@ -3,6 +3,8 @@ require 'bundler'
 
 Bundler.require :default
 
+require 'webmock/rspec'
+
 def read_fixture(path)
   File.open(fixture_path path).read
 end

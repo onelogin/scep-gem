@@ -13,6 +13,7 @@ module SCEP
 
     # @return [OpenSSL::X509::Certificate]
     attr_accessor :certificate
+    alias_method :cert, :certificate
 
     # @return [OpenSSL::PKey]
     attr_accessor :private_key

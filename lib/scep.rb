@@ -4,7 +4,7 @@ require 'openssl'
 require 'scep/version'
 
 module SCEP
-  autoload :Server,         'scep/server'
+  autoload :Endpoint,       'scep/endpoint'
   autoload :PKIOperation,   'scep/pki_operation'
   autoload :PKCS7CertOnly,  'scep/pkcs7_cert_only'
   autoload :Keypair,        'scep/keypair'
