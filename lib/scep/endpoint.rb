@@ -121,8 +121,8 @@ module SCEP
     end
 
 
-    # TODO: handle GET PKIOperations
-    # TODO: verify actually signed by CA?
+    # @todo: handle GET PKIOperations
+    # @todo: verify actually signed by CA?
     # @param [String] payload the raw payload to send
     # @return [String] the response body
     def pki_operation(payload)

@@ -39,7 +39,7 @@ describe SCEP::PKIOperation::Proxy do
 
       expect(result.csr.to_pem).to eql(csr.to_pem)
       expect(result.signed_certificates.first.to_pem).to eql(signed_keypair.cert.to_pem)
-      expect(result.p7enc_response.to_der).to_not be_blank
+      expect(result.p7enc_response.to_der.length).to_not eql(0)
     end
   end
 end
