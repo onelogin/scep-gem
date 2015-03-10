@@ -4,7 +4,6 @@ describe SCEP::PKIOperation::Request do
 
   let(:ra_keypair)   { generate_keypair }
   let(:misc_keypair) { generate_keypair}
-  let(:request)      { SCEP::PKIOperation}
   let(:csr)     { OpenSSL::X509::Request.new read_fixture('self-signed.csr') }
   let(:payload) { csr.to_der }
   let(:p7enc)   { OpenSSL::PKCS7.encrypt([ra_keypair.certificate], payload, SCEP::PKIOperation::Base.create_default_cipher, OpenSSL::PKCS7::BINARY) }

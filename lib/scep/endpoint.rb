@@ -75,14 +75,27 @@ module SCEP
     alias_method :get_ca_cert, :download_certificates
 
 
-    # Gets server capabilities
+    # Gets server capabilities. Memoized version of {#fetch_capabilities}
     # @return [Set<String>] a set of capabilities
     def capabilities
-      @capabilities ||= begin
-        response = scep_request 'GetCACaps'
-        caps = response.body.trim.split("\n")
-        Set.new(caps)
-      end
+      @capabilities || fetch_capabilities
+    end
+
+    # Gets server capabilities. Always triggers a download of capabilities
+    # @return [Set<String>] a set of capabilities
+    def fetch_capabilities
+      logger.debug 'Getting SCEP endpoint capabilities'
+      response = scep_request 'GetCACaps'
+      caps = response.body.strip.split("\n")
+      @capabilities = Set.new(caps)
+      logger.debug "SCEP endpoint supports capabilities: #{@capabilities.inspect}"
+      return @capabilities
+    end
+
+    # Whether the SCEP endpoint supports the POSTPKIOperation
+    # @return [Boolean] TRUE if it is supported, FALSE otherwise
+    def post_pki_operation?
+      capabilities.include?('POSTPKIOperation')
     end
 
     # Executes a SCEP request.
@@ -105,6 +118,20 @@ module SCEP
       end
 
       return response
+    end
+
+
+    # TODO: handle GET PKIOperations
+    # TODO: verify actually signed by CA?
+    # @param [String] payload the raw payload to send
+    # @return [String] the response body
+    def pki_operation(payload)
+      response = scep_request('PKIOperation', payload, true)
+      if response.content_type != 'application/x-pki-message'
+        raise ProtocolError,
+          "SCEP PKIOperation didn't return content-type of application/x-pki-message (returned #{response.content_type})"
+      end
+      return response.body
     end
 
     protected

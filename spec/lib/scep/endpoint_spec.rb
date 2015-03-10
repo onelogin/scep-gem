@@ -12,12 +12,17 @@ describe SCEP::Endpoint do
   let(:base_url) { 'http://scep.server' }
   let(:p7certs_ca_ra) { SCEP::PKCS7CertOnly.new([ca_keypair.cert, ra_keypair.cert])}
 
+  let(:capabilities) { ['POSTPKIOperation', 'DES3' ]}
+
   subject { SCEP::Endpoint.new(base_url) }
 
   # General-purpose stubs
   before do
     stub_request(:get, "http://scep.server/?operation=GetCACert").
       to_return(:status => 200, :body => p7certs_ca_ra.to_der, :headers => { 'Content-Type' => 'application/x-x509-ca-ra-cert'})
+
+    stub_request(:get, "http://scep.server/?operation=GetCACaps").
+      to_return(:status => 200, :body => capabilities.join("\n"), :headers => {})
   end
 
   describe '#ca_certificate' do
@@ -40,9 +45,29 @@ describe SCEP::Endpoint do
         expect(subject.supports_ra_certificate?).to eql(true)
       end
     end
-
   end
 
+  describe '#capabilities' do
+    it 'gets a list of capabilities from the server' do
+      caps = subject.capabilities
+      expect(caps.to_a.sort).to eql(capabilities.sort)
+    end
+  end
+
+  describe '#post_pki_operation?' do
+    context 'when it supports the POSTPKIOperation' do
+      it 'returns true' do
+        expect(subject.post_pki_operation?).to eql(true)
+      end
+    end
+
+    context 'when it does not support the POSTPKIOperation' do
+      let(:capabilities) { ['Foo'] }
+      it 'returns false' do
+        expect(subject.post_pki_operation?).to eql(false)
+      end
+    end
+  end
 
   describe '#download_certificates' do
     context 'with a valid response' do
