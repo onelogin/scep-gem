@@ -52,4 +52,33 @@ describe SCEP::PKIOperation::Request do
     end
   end
 
+  describe '#recalculate_authenticated_attributes_digest' do
+    def pluck_digest(signer_info)
+      encrypted_digest = signer_info.value.last.value
+      decrypted_digest = subject.ra_keypair.private_key.public_decrypt(encrypted_digest)
+      return decrypted_digest
+    end
+
+    it 'correctly generates a new digest' do
+      subject.csr = csr
+      p7sign = subject.encrypt(misc_keypair.certificate)
+      asn1 =  OpenSSL::ASN1.decode(p7sign.to_der)
+
+      signer_info = asn1.value[1].value[0].value[4].value[0]
+      original_digest = pluck_digest(signer_info)
+
+
+      subject.send(:recalculate_authenticated_attributes_digest, signer_info)
+
+      new_digest = pluck_digest(signer_info)
+
+      # binding.pry
+      # expect(new_digest).to eql(original_digest)
+
+      # TODO: make sure digest calculation equals existing digest
+
+    end
+
+  end
+
 end

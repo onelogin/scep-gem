@@ -54,8 +54,14 @@ module SCEP
       def encrypt(target_encryption_certs)
         raise ArgumentError, '#csr must be an OpenSSL::X509::Request' unless
           csr.is_a?(OpenSSL::X509::Request)
-        encrypted = sign_and_encrypt_raw(csr.to_der, target_encryption_certs)
-        return self.class.add_scep_message_type(encrypted)
+        sign_and_encrypt_raw(csr.to_der, target_encryption_certs)
+      end
+
+      # Encrypts with extended attributes required by some SCEP clients.
+      # @note THIS WILL BREAK VERIFICATION!
+      def encrypt_with_extended_attributes(target_encryption_certs)
+        # (target_encryption_certs)
+        # TOOD: finish this stuff up
       end
 
       # Decrypts a signed and encrypted payload and then re-encrypts it. {#csr} will contain the CSR object
@@ -76,13 +82,29 @@ module SCEP
       # @param [OpenSSL::PKCS7] pkcs7 a pkcs7 message
       # @return [OpenSSL::PKCS7] a new pkcs7 message with the proper scep message type
       # @note Don't tamper with the signer info once you've used this method!
-      def self.add_scep_message_type(pkcs7)
+      def add_scep_message_type(pkcs7)
         asn1 = OpenSSL::ASN1.decode(pkcs7.to_der)
         pkcs_cert_resp_signed = asn1.value[1].value[0]
         signer_info = pkcs_cert_resp_signed.value[4].value[0]
         authenticated_attributes = signer_info.value[3]
-        authenticated_attributes.value << SCEP::ASN1.message_type(SCEP::ASN1::MESSAGE_TYPE_PKCS_REQ)
+        # authenticated_attributes.value << SCEP::ASN1.message_type(SCEP::ASN1::MESSAGE_TYPE_PKCS_REQ)
+        recalculate_authenticated_attributes_digest(signer_info)
         return OpenSSL::PKCS7.new(asn1.to_der)
+      end
+
+      def recalculate_authenticated_attributes_digest(signer_info)
+        digest_algorithm = signer_info.value[2].value[0].sn # => "SHA256"
+        unless digest_algorithm == 'SHA256'
+          raise "Currently unsupported digest algorithm: #{digest_algorithm}"
+        end
+
+        authenticated_attributes = signer_info.value[3]
+
+        sha256 = OpenSSL::Digest::SHA256.new
+        new_digest = sha256.digest(authenticated_attributes.to_der)
+        encrypted_digest = ra_keypair.private_key.private_encrypt(new_digest)
+
+        signer_info.value.last.value = encrypted_digest
       end
 
 

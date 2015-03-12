@@ -42,6 +42,17 @@ describe 'SCEP and EJBCA' do
 
     it 'signs a CSR' do
       encrypted = request.encrypt(ra_cert)
+
+      asn1 = OpenSSL::ASN1.decode(encrypted.to_der)
+
+      pkcs_cert_resp_signed = asn1.value[1].value[0]
+      signer_info = pkcs_cert_resp_signed.value[4].value[0]
+      authenticated_attributes = signer_info.value[3]
+
+      #digest =
+
+      # binding.pry
+
       endpoint.pki_operation(encrypted.to_der)
     end
   end
