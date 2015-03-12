@@ -3,6 +3,7 @@ require 'bundler'
 
 Bundler.require :default
 
+require 'pry'
 require 'webmock/rspec'
 
 def read_fixture(path)

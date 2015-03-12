@@ -54,7 +54,8 @@ module SCEP
       def encrypt(target_encryption_certs)
         raise ArgumentError, '#csr must be an OpenSSL::X509::Request' unless
           csr.is_a?(OpenSSL::X509::Request)
-        sign_and_encrypt_raw(csr.to_der, target_encryption_certs)
+        encrypted = sign_and_encrypt_raw(csr.to_der, target_encryption_certs)
+        return self.class.add_scep_message_type(encrypted)
       end
 
       # Decrypts a signed and encrypted payload and then re-encrypts it. {#csr} will contain the CSR object
@@ -65,6 +66,26 @@ module SCEP
         decrypt(signed_and_encrypted_csr, verify)
         encrypt(target_encryption_certs)
       end
+
+
+      protected
+
+
+      # Adds a required message type to the PKCS7 request. I can't believe I'm doing this...
+      #
+      # @param [OpenSSL::PKCS7] pkcs7 a pkcs7 message
+      # @return [OpenSSL::PKCS7] a new pkcs7 message with the proper scep message type
+      # @note Don't tamper with the signer info once you've used this method!
+      def self.add_scep_message_type(pkcs7)
+        asn1 = OpenSSL::ASN1.decode(pkcs7.to_der)
+        pkcs_cert_resp_signed = asn1.value[1].value[0]
+        signer_info = pkcs_cert_resp_signed.value[4].value[0]
+        authenticated_attributes = signer_info.value[3]
+        authenticated_attributes.value << SCEP::ASN1.message_type(SCEP::ASN1::MESSAGE_TYPE_PKCS_REQ)
+        return OpenSSL::PKCS7.new(asn1.to_der)
+      end
+
+
     end
   end
 end
