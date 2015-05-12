@@ -2,6 +2,8 @@ SCEP Gem
 ========
 Libraries that allow you to be a SCEP server, be a SCEP proxy, etc.
 
+If you believe you have discovered a security vulnerability in this gem, please email security@onelogin.com with a description. You can also use the form based submission located here: https://www.onelogin.com/security. We follow responsible disclosure guidelines, and will work with you to quickly find a resolution.
+
 ## Terminology
 
 * CSR - Certificate Signing Request. "I want you to sign my public key so you know who I am in the future"
