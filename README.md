@@ -144,3 +144,6 @@ post '/scep?operation=PKIOperation' do
   render results.p7enc_response.to_der
 end
 ```
+
+## License
+This gem is released under the [MIT License](http://opensource.org/licenses/MIT)

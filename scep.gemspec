@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.summary       = %q{SCEP libraries}
   spec.description   = %q{Makes development of SCEP services easier}
   spec.homepage      = 'https://github.com/onelogin/scep-gem'
-  spec.license       = 'Proprietary'
+  spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
@@ -22,6 +22,7 @@ Gem::Specification.new do |spec|
     spec.add_dependency 'httparty', '<= 0.11'
   else
     spec.add_dependency 'httparty'
+    spec.add_development_dependency 'codeclimate-test-reporter'
   end
 
   spec.add_development_dependency 'bundler', '~> 1.7'
@@ -29,8 +30,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'pry', '~> 0.9.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'webmock'
-
-  if RUBY_VERSION > '1.8.7'
-    spec.add_development_dependency 'codeclimate-test-reporter'
-  end
 end
