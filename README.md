@@ -100,7 +100,7 @@ encrypted = response.encrypt(their_cert)
 When we are decrypting information from an RA
 
 ```ruby
-their_ra_cert = OpenSSL::X509::Certificate.new File.read(their-ra.crt')
+their_ra_cert = OpenSSL::X509::Certificate.new File.read('their-ra.crt')
 our_keypair   = SCEP::Keypair.read 'our.crt', 'our.key'
 
 response = SCEP::PKIOperation::Response.new(our_keypair)
