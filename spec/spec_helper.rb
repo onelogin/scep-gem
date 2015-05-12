@@ -4,7 +4,7 @@ require 'pry'
 require 'webmock/rspec'
 require 'scep'
 
-if RUBY_VERSION >= "1.8.7"
+if RUBY_VERSION > '1.8.7'
   require 'codeclimate-test-reporter'
   WebMock.disable_net_connect!(:allow => 'codeclimate.com')
   CodeClimate::TestReporter.start
