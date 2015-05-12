@@ -1,6 +1,6 @@
 SCEP Gem
 ========
-[![Build Status](https://travis-ci.org/onelogin/scep-gem.svg?branch=master)](https://travis-ci.org/onelogin/scep-gem)
+[![Build Status](https://travis-ci.org/onelogin/scep-gem.svg?branch=master)](https://travis-ci.org/onelogin/scep-gem) [![Code Climate](https://codeclimate.com/github/onelogin/scep-gem/badges/gpa.svg)](https://codeclimate.com/github/onelogin/scep-gem)
 
 Libraries that allow you to be a SCEP server, be a SCEP proxy, etc.
 
@@ -25,7 +25,7 @@ When we want to forward a CSR to a RA. We may or may not be an RA ourselves.
 First,collect some certificates:
 
 ```ruby
-their_ra_cert = OpenSSL::X509::Certificate.new File.read(their-ra.crt')
+their_ra_cert = OpenSSL::X509::Certificate.new File.read('their-ra.crt')
 our_keypair   = SCEP::Keypair.read 'our.crt', 'our.key'
 csr           = OpenSSL::X509::Request.new File.read('some.csr')
 ```
