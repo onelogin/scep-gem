@@ -4,6 +4,10 @@ require 'bundler'
 Bundler.require :default
 
 require 'webmock/rspec'
+require 'codeclimate-test-reporter'
+
+WebMock.disable_net_connect!(:allow => 'codeclimate.com')
+CodeClimate::TestReporter.start
 
 def read_fixture(path)
   File.open(fixture_path path).read
