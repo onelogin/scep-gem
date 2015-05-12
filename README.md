@@ -1,6 +1,6 @@
 SCEP Gem
 ========
-[![Build Status](https://travis-ci.org/onelogin/scep-gem.svg?branch=master)](https://travis-ci.org/onelogin/scep-gem) [![Code Climate](https://codeclimate.com/github/onelogin/scep-gem/badges/gpa.svg)](https://codeclimate.com/github/onelogin/scep-gem)
+[![Build Status](https://travis-ci.org/onelogin/scep-gem.svg?branch=master)](https://travis-ci.org/onelogin/scep-gem) [![Code Climate](https://codeclimate.com/github/onelogin/scep-gem/badges/gpa.svg)](https://codeclimate.com/github/onelogin/scep-gem) [![Code Climate](https://codeclimate.com/github/onelogin/scep-gem/badges/gpa.svg)](https://codeclimate.com/github/onelogin/scep-gem)
 
 Libraries that allow you to be a SCEP server, be a SCEP proxy, etc.
 

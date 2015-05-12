@@ -29,4 +29,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'pry', '~> 0.9.0'
   spec.add_development_dependency 'rspec', '~> 3.0'
   spec.add_development_dependency 'webmock'
+
+  if RUBY_VERSION > '1.8.7'
+    spec.add_development_dependency 'codeclimate-test-reporter'
+  end
 end

@@ -1,9 +1,14 @@
 require 'rubygems'
 require 'bundler'
-
-Bundler.require :default
-
+require 'pry'
 require 'webmock/rspec'
+require 'scep'
+
+if RUBY_VERSION > '1.8.7'
+  require 'codeclimate-test-reporter'
+  WebMock.disable_net_connect!(:allow => 'codeclimate.com')
+  CodeClimate::TestReporter.start
+end
 
 def read_fixture(path)
   File.open(fixture_path path).read
