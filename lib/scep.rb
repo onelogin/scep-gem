@@ -1,5 +1,6 @@
 require 'logger'
 require 'openssl'
+require 'openssl-extensions/all'
 
 require 'scep/version'
 
@@ -8,6 +9,7 @@ module SCEP
   autoload :PKIOperation,   'scep/pki_operation'
   autoload :PKCS7CertOnly,  'scep/pkcs7_cert_only'
   autoload :Keypair,        'scep/keypair'
+  autoload :JSCEPCli,       'scep/jscep_cli'
   autoload :ASN1,           'scep/asn1'
 
   # Allows backwards-compatibility between ruby 1.8.7 and newer versions

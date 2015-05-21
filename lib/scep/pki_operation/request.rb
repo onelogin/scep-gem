@@ -37,6 +37,26 @@ module SCEP
       # @return [OpenSSL::X509::Request]
       attr_accessor :csr
 
+      def challenge_password?
+        csr && csr.challenge_password?
+      end
+
+      def challenge_password
+        return false unless challenge_password?
+        csr_challenge_password.value.value.first.value
+      end
+
+      def challenge_password=(password)
+        return false if csr.blank?
+        attribute = csr_challenge_password
+        if attribute.blank?
+          attribute = generate_challenge_password(password)
+          csr.add_attribute(attribute)
+        else
+          attribute.value.value.first.value = password
+        end
+      end
+
       # Decrypts a signed and encrypted csr. Sets {#csr} to the decrypted value
       # @param [String] signed_and_encrypted_csr the raw and encrypted
       # @param [Boolean] verify if TRUE, verifies against {#x509_store}. If FALSE, skips verification
@@ -60,9 +80,14 @@ module SCEP
       # Encrypts with extended attributes required by some SCEP clients.
       # @note THIS WILL BREAK VERIFICATION!
       def encrypt_with_extended_attributes(target_encryption_certs)
-        # (target_encryption_certs)
-        # TOOD: finish this stuff up
+        raise ArgumentError, '#csr must be an OpenSSL::X509::Request' unless
+          csr.is_a?(OpenSSL::X509::Request)
+        pkcs7 = sign_and_encrypt_raw(csr.to_der, target_encryption_certs)
+        add_scep_message_type(pkcs7)
       end
+
+      # TODO: uncomment/refactor once adding extended attributes works
+      # alias_method :encrypt, :encrypt_with_extended_attributes
 
       # Decrypts a signed and encrypted payload and then re-encrypts it. {#csr} will contain the CSR object
       # @param [String] signed_and_encrypted_csr
@@ -77,7 +102,16 @@ module SCEP
       protected
 
 
+      def csr_challenge_password
+        csr.send(:read_attributes_by_oid, 'challengePassword')
+      end
+
+
+
       # Adds a required message type to the PKCS7 request. I can't believe I'm doing this...
+      #
+      # Take a look at https://tools.ietf.org/html/draft-nourse-scep-11. Here, we're adding the
+      # signerInfo/messageType of "PKCSReq" inside of the "Signed PKCSReq."
       #
       # @param [OpenSSL::PKCS7] pkcs7 a pkcs7 message
       # @return [OpenSSL::PKCS7] a new pkcs7 message with the proper scep message type
@@ -87,8 +121,8 @@ module SCEP
         pkcs_cert_resp_signed = asn1.value[1].value[0]
         signer_info = pkcs_cert_resp_signed.value[4].value[0]
         authenticated_attributes = signer_info.value[3]
-        # authenticated_attributes.value << SCEP::ASN1.message_type(SCEP::ASN1::MESSAGE_TYPE_PKCS_REQ)
-        recalculate_authenticated_attributes_digest(signer_info)
+        authenticated_attributes.value << SCEP::ASN1.message_type(SCEP::ASN1::MESSAGE_TYPE_PKCS_REQ)
+        # todo: broken?? -- recalculate_authenticated_attributes_digest(signer_info)
         return OpenSSL::PKCS7.new(asn1.to_der)
       end
 
@@ -107,6 +141,17 @@ module SCEP
         signer_info.value.last.value = encrypted_digest
       end
 
+
+      # Takes a password and generates an attribute
+      # @param password [String] what the challenge password should be
+      # @return [OpenSSL::X509::Attribute]
+      def self.generate_challenge_password(password)
+        attribute = OpenSSL::X509::Attribute.new('challengePassword')
+        attribute.value = OpenSSL::ASN1::Set.new([
+          OpenSSL::ASN1::PrintableString.new(password.to_s)
+        ])
+        attribute
+      end
 
     end
   end
