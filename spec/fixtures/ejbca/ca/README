@@ -1,0 +1,14 @@
+Contains data extracted from EJBCA.
+
+PKCS#12 password is "foo123"
+
+Sample decryption:
+
+  content = read_fixture('ejbca/ca/management_ca/keystore.p12.b64')
+  decoded = Base64.decode64(content)
+  p12     = OpenSSL::PKCS12.new(decoded, 'foo123')
+  puts p12.key
+
+One-liner:
+
+  OpenSSL::PKCS12.new(Base64.decode64(read_fixture('ejbca/ca/management_ca/keystore.p12.b64')), 'foo123')

@@ -145,5 +145,18 @@ post '/scep?operation=PKIOperation' do
 end
 ```
 
+### EJBCA Support
+EJBCA supports the SCEP specification rigorously. This requires tampering with the ASN1 format of PKCS#7. To
+solve this, use the following code for SCEP requests:
+
+```ruby
+request = SCEP::PKIOperation::Request.new(@keypair)
+request.tamper_scep_message_type = true
+# send request
+```
+
+EJBCA should accept this message. However, this MAY break verifications for other SCEP endpoints. Until this issue
+is fixed, it is suggested you avoid using this unless you absolutely have to.
+
 ## License
 This gem is released under the [MIT License](http://opensource.org/licenses/MIT)

@@ -1,5 +1,8 @@
 require 'rubygems'
 require 'bundler'
+
+Bundler.require :default
+
 require 'pry'
 require 'webmock/rspec'
 require 'scep'
@@ -29,11 +32,11 @@ end
 # @param [SCEP::Keypair] signer
 # @return [SCEP::Keypair]
 # @see http://stackoverflow.com/questions/2381394/ruby-generate-self-signed-certificate
-def generate_keypair(signer = nil, serial = nil)
+def generate_keypair(signer = nil, serial = nil, subj = nil)
   serial ||= next_serial
 
   private_key = OpenSSL::PKey::RSA.new(1024)
-  subject = '/C=BE/O=Test/OU=Test/CN=Test'
+  subject = subj || '/C=BE/O=Test/OU=Test/CN=Test'
 
   signer_private_key = signer ? signer.private_key : private_key
   signer_name        = signer ? signer.certificate.subject : OpenSSL::X509::Name.parse(subject)
