@@ -20,5 +20,19 @@ module SCEP
       ])
     end
 
+    def self.pkcs7_signature_hash(hash, algorithm_name)
+      OpenSSL::ASN1::Sequence.new([
+        OpenSSL::ASN1::Sequence.new([
+          OpenSSL::ASN1::ObjectId.new(algorithm_name),
+          OpenSSL::ASN1::Null.new(nil)
+        ]),
+        OpenSSL::ASN1::OctetString.new(hash)
+      ])
+    end
+
+    def self.calculate_and_generate_pkcs7_signature_hash(data, algorithm)
+      hash = OpenSSL::Digest.digest(algorithm, data)
+      pkcs7_signature_hash(hash, algorithm)
+    end
   end
 end

@@ -22,6 +22,10 @@ module SCEP
       raise ArgumentError, '`certificate` must be an OpenSSL::X509::Certificate' unless
         certificate.is_a?(OpenSSL::X509::Certificate)
 
+      unless certificate.check_private_key(private_key)
+        raise ArgumentError, '`private_key` does not match `certificate`'
+      end
+
       @certificate = certificate
       @private_key = private_key
     end
