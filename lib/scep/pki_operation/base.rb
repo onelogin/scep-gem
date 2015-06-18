@@ -7,6 +7,8 @@ module SCEP
     # * {#ra_private_key RA Private Key}
     #
     class Base
+      include SCEP::Loggable
+
       DEFAULT_CIPHER_ALGORITHM = 'aes-256-cbc'
 
       # Our keypair
@@ -71,6 +73,7 @@ module SCEP
 
         # Decrypt
         @p7enc   = OpenSSL::PKCS7.new(@p7sign.data)
+        check_if_recipient_matches_ra_certificate_name(@p7enc)
         @p7enc.decrypt(ra_keypair.private_key, ra_keypair.certificate, OpenSSL::PKCS7::BINARY)
       end
 
@@ -104,6 +107,28 @@ module SCEP
       end
 
       protected
+
+      def check_if_recipient_matches_ra_certificate_name(p7enc)
+        if p7enc.recipients.nil? || p7enc.recipients.empty?
+          logger.warn 'SCEP request does not have any recipient info - ' \
+            'cannot determine if SCEP request is intended for us'
+          return false
+        end
+
+        matched = false
+        names = p7enc.recipients.map(&:issuer).each do |name|
+          if name.cmp(ra_keypair.certificate.subject) == 0
+            matched = true
+            break
+          end
+        end
+
+        unless matched
+          logger.warn 'SCEP request does not appear to be addressed to us! ' \
+            "RA Cert: #{ra_keypair.certificate.subject.to_s}, Recipients: [#{names.map(&:to_s).join(', ')}]"
+        end
+        matched
+      end
 
       # Same as `Array.wrap`
       # @see http://apidock.com/rails/Array/wrap/class

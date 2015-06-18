@@ -18,6 +18,8 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ['lib']
 
+  spec.add_dependency 'openssl-extensions'
+
   if RUBY_VERSION < '1.9'
     spec.add_dependency 'httparty', '<= 0.11'
   else

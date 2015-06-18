@@ -1,5 +1,8 @@
 require 'rubygems'
 require 'bundler'
+
+Bundler.require :default
+
 require 'pry'
 require 'webmock/rspec'
 require 'scep'

@@ -114,6 +114,8 @@ module SCEP
       end
 
       if response.code != 200
+        logger.debug "Response body:"
+        logger.debug response.body
         raise ProtocolError, "SCEP request returned non-200 code of #{response.code}"
       end
 
