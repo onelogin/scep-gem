@@ -40,7 +40,6 @@ module SCEP
       # @return [OpenSSL::X509::Request]
       attr_accessor :csr
 
-
       # Whether we should tamper with the SCEP message type. This is **required** to work with some SCEP
       # implementations, but this may cause verification to fail. Only affects encryption.
       # @example Without Tampering
@@ -117,7 +116,10 @@ module SCEP
         raise ArgumentError, '#csr must be an OpenSSL::X509::Request' unless
           csr.is_a?(OpenSSL::X509::Request)
         p7enc = sign_and_encrypt_raw(csr.to_der, target_encryption_certs)
-        p7enc = add_scep_message_type(p7enc) if tamper_scep_message_type?
+        if tamper_scep_message_type?
+          logger.info 'Tampering SCEP message type - request may be rejected by RA'
+          p7enc = add_scep_message_type(p7enc)
+        end
         p7enc
       end
 
@@ -171,7 +173,6 @@ module SCEP
         encrypted_digest = ra_keypair.private_key.private_encrypt(new_digest.to_der)
         signer_info.value.last.value = encrypted_digest
       end
-
 
       # Takes a password and generates an attribute
       # @param password [String] what the challenge password should be

@@ -53,4 +53,36 @@ describe SCEP::PKIOperation::Base do
       end
     end
   end
+
+  describe '#check_if_recipient_matches_ra_certificate_name' do
+    let(:misc_keypair) { generate_keypair(nil, nil, '/C=Asdf/O=Fake')  }
+    let(:p7enc)        { OpenSSL::PKCS7.encrypt([target_cert], 'foo', base.class.create_default_cipher)}
+
+    context 'with matching recipients' do
+      let(:target_cert)  { ra_keypair.certificate }
+
+      it 'returns true' do
+        matches = base.send(:check_if_recipient_matches_ra_certificate_name, p7enc)
+        expect(matches).to eql(true)
+      end
+    end
+
+    context 'with non-matching recepients' do
+      let(:target_cert) { misc_keypair.certificate }
+
+      it 'returns false' do
+        matches = base.send(:check_if_recipient_matches_ra_certificate_name, p7enc)
+        expect(matches).to eql(false)
+      end
+    end
+
+    context 'with no recepients' do
+      let(:p7enc) { OpenSSL::PKCS7.new }
+
+      it 'returns false' do
+        matches = base.send(:check_if_recipient_matches_ra_certificate_name, p7enc)
+        expect(matches).to eql(false)
+      end
+    end
+  end
 end
