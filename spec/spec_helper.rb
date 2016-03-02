@@ -48,7 +48,7 @@ def generate_keypair(signer = nil, serial = nil, subj = nil)
   cert.not_after  = Time.now + 365 * 24 * 360
   cert.public_key = private_key.public_key
   cert.serial     = serial
-  cert.version    = 3
+  cert.version    = 2
 
   ef = OpenSSL::X509::ExtensionFactory.new
   ef.subject_certificate = cert
